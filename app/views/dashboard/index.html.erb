@@ -1,0 +1,13 @@
+<h1 class="text-center">Bienvenido a mi aplicación Rails con Bootstrap</h1>
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <button class="btn btn-primary">Botón Primario</button>
+    </div>
+    <div class="col">
+      <button class="btn btn-secondary">Botón Secundario</button>
+    </div>
+  </div>
+</div>
+
+<%= button_to 'Cerrar sesión', destroy_user_session_path, method: :delete, class: 'btn btn-danger' %>
