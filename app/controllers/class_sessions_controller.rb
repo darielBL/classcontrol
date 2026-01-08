@@ -6,7 +6,7 @@ class ClassSessionsController < ApplicationController
   end
 
   def show
-    @attendances = @class_session.attendance.includes(:student).order('students.name')
+    @attendances = @class_session.attendances.includes(:student).order('students.name')
   end
 
   def new
@@ -19,7 +19,7 @@ class ClassSessionsController < ApplicationController
     if @class_session.save
       # Crear registros de asistencia vacíos para todos los estudiantes
       current_user.students.each do |student|
-        @class_session.attendance.create(student: student, present: false)
+        @class_session.attendances.create(student: student, present: false)
       end
 
       redirect_to class_sessions_path, notice: 'Clase creada exitosamente.'
