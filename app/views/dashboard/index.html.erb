@@ -1,13 +1,114 @@
-<h1 class="text-center">Bienvenido a mi aplicación Rails con Bootstrap</h1>
-<div class="container">
-  <div class="row">
-    <div class="col">
-      <button class="btn btn-primary">Botón Primario</button>
+<div class="animate-fade-in">
+  <!-- Header -->
+  <div class="mb-4">
+    <h1 class="h2 fw-bold">Panel de Control</h1>
+    <p class="text-muted">Resumen general de tu clase</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-4 mb-4">
+    <!-- Total Estudiantes -->
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="stat-card h-100">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="text-muted small text-uppercase">Total Estudiantes</span>
+          <i class="bi bi-people-fill text-primary"></i>
+        </div>
+        <h2 class="display-6 fw-bold mb-0"><%= @stats[:total_students] %></h2>
+      </div>
     </div>
-    <div class="col">
-      <button class="btn btn-secondary">Botón Secundario</button>
+
+    <!-- Clases Realizadas -->
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="stat-card h-100">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="text-muted small text-uppercase">Clases Realizadas</span>
+          <i class="bi bi-book-fill text-success"></i>
+        </div>
+        <h2 class="display-6 fw-bold mb-0"><%= @stats[:total_sessions] %></h2>
+      </div>
+    </div>
+
+    <!-- Promedio General -->
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="stat-card h-100">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="text-muted small text-uppercase">Promedio General</span>
+          <i class="bi bi-graph-up-arrow text-warning"></i>
+        </div>
+        <h2 class="display-6 fw-bold mb-0 <%= grade_color_class(@stats[:class_average_grade]) %>">
+          <%= @stats[:class_average_grade]&.round(1) || '-' %>
+        </h2>
+      </div>
+    </div>
+
+    <!-- Asistencia Promedio -->
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="stat-card h-100">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="text-muted small text-uppercase">Asistencia Promedio</span>
+          <i class="bi bi-check-circle-fill text-success"></i>
+        </div>
+        <h2 class="display-6 fw-bold mb-0 text-success">
+          <%= @stats[:class_average_attendance]&.round(0) || 0 %>%
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Students Table -->
+  <div class="card bg-card border-secondary">
+    <div class="card-header bg-transparent border-secondary">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-bar-chart-fill text-primary me-2"></i>
+        Rendimiento de Estudiantes
+      </h5>
+    </div>
+    <div class="card-body">
+      <% if @stats[:students].any? %>
+        <div class="table-responsive">
+          <table class="table table-dark table-hover align-middle mb-0">
+            <thead>
+            <tr class="text-muted small text-uppercase">
+              <th>Estudiante</th>
+              <th>Promedio</th>
+              <th>Asistencia</th>
+              <th>Clases Asistidas</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% @stats[:students].each do |student| %>
+              <tr>
+                <td class="fw-medium"><%= student[:name] %></td>
+                <td>
+                    <span class="fs-5 fw-semibold <%= grade_color_class(student[:average_grade]) %>">
+                      <%= student[:average_grade]&.round(1) || '-' %>
+                    </span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="progress flex-grow-1" style="height: 8px; max-width: 100px;">
+                      <div class="progress-bar <%= attendance_color_class(student[:attendance_percentage]) %>"
+                           style="width: <%= student[:attendance_percentage] %>%"></div>
+                    </div>
+                    <span class="text-muted small"><%= student[:attendance_percentage]&.round(0) %>%</span>
+                  </div>
+                </td>
+                <td class="text-muted">
+                  <%= student[:sessions_attended] %> / <%= @stats[:total_sessions] %>
+                </td>
+              </tr>
+            <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-people fs-1 d-block mb-3 opacity-50"></i>
+          <p class="mb-1">No hay estudiantes registrados</p>
+          <small>Agrega estudiantes para ver sus estadísticas</small>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>
-
-<%= button_to 'Cerrar sesión', destroy_user_session_path, method: :delete, class: 'btn btn-danger' %>

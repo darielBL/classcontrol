@@ -1,5 +1,5 @@
-<aside class="sidebar d-none d-lg-block">
-  <div class="p-4">
+<aside class="sidebar d-none d-lg-flex flex-column">
+<div class="p-4">
     <!-- Logo -->
     <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-secondary">
       <div class="logo-icon">
@@ -14,7 +14,8 @@
     <!-- Navigation Links -->
     <%= render 'shared/nav_links' %>
   </div>
-
+    <div id="footer" class="mt-auto pt-4 border-secondary">
   <!-- User Info & Logout -->
   <%= render 'shared/user_info' %>
+  </div>
 </aside>

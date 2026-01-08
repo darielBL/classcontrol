@@ -1,0 +1,128 @@
+<div class="animate-fade-in">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 fw-bold">Estudiantes</h1>
+      <p class="text-muted mb-0">Gestiona los estudiantes de tu clase</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#studentModal" onclick="openCreateModal()">
+      <i class="bi bi-plus-lg me-2"></i>Agregar Estudiante
+    </button>
+  </div>
+
+  <!-- Students List -->
+  <div class="card bg-card border-secondary">
+    <div class="card-header bg-transparent border-secondary">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-people-fill text-primary me-2"></i>
+        Lista de Estudiantes (<%= @students&.count %>)
+      </h5>
+    </div>
+    <div class="card-body">
+      <% if @students&.any? %>
+        <div class="d-flex flex-column gap-2">
+          <% @students.each do |student| %>
+            <div class="student-item d-flex align-items-center justify-content-between p-3 rounded">
+              <div class="d-flex align-items-center gap-3">
+                <div class="student-avatar">
+                  <%= student.name.first.upcase %>
+                </div>
+                <span class="fw-medium"><%= student.name %></span>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-ghost" onclick="openEditModal('<%= student.id %>', '<%= j(student.name) %>')">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-ghost text-danger" onclick="openDeleteModal('<%= student.id %>', '<%= j(student.name) %>')">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-people fs-1 d-block mb-3 opacity-50"></i>
+          <p class="mb-1">No hay estudiantes registrados</p>
+          <small>Comienza agregando tu primer estudiante</small>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal fade" id="studentModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-card border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title" id="studentModalTitle">Nuevo Estudiante</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <%= form_with url: students_path, method: :post, id: "studentForm", local: true do |f| %>
+        <div class="modal-body">
+          <input type="hidden" name="_method" id="formMethod" value="post">
+          <div class="mb-3">
+            <label for="studentName" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="studentName" name="student[name]" placeholder="Nombre del estudiante" required>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="studentSubmitBtn">Crear</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-card border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">¿Eliminar estudiante?</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-0">
+          Esta acción eliminará a "<span id="deleteStudentName"></span>" y todos sus registros de asistencia y notas. Esta acción no se puede deshacer.
+        </p>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form action="" method="post" id="deleteForm">
+          <input type="hidden" name="_method" value="delete">
+          <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+          <button type="submit" class="btn btn-danger">Eliminar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        document.getElementById('studentModalTitle').textContent = 'Nuevo Estudiante';
+        document.getElementById('studentForm').action = '<%= students_path %>';
+        document.getElementById('formMethod').value = 'post';
+        document.getElementById('studentName').value = '';
+        document.getElementById('studentSubmitBtn').textContent = 'Crear';
+    }
+
+    function openEditModal(id, name) {
+        document.getElementById('studentModalTitle').textContent = 'Editar Estudiante';
+        document.getElementById('studentForm').action = '/students/' + id;
+        document.getElementById('formMethod').value = 'patch';
+        document.getElementById('studentName').value = name;
+        document.getElementById('studentSubmitBtn').textContent = 'Guardar';
+        new bootstrap.Modal(document.getElementById('studentModal')).show();
+    }
+
+    function openDeleteModal(id, name) {
+        document.getElementById('deleteStudentName').textContent = name;
+        document.getElementById('deleteForm').action = '/students/' + id;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
