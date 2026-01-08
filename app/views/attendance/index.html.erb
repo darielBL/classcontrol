@@ -1,0 +1,145 @@
+<div class="animate-fade-in">
+  <!-- 1. HEADER con BOTÓN (siempre visible cuando hay clase) -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 fw-bold">Registro de Asistencia</h1>
+      <p class="text-muted mb-0">Registra asistencia y notas por clase</p>
+    </div>
+    <% if @selected_session %>
+      <%= form_with url: attendance_index_path, method: :post, local: true do |f| %>
+        <%= f.hidden_field :session_id, value: @selected_session.id %>
+
+      <% end %>
+    <% end %>
+  </div>
+
+  <!-- 2. SELECTOR DE CLASES (SIEMPRE VISIBLE) -->
+  <div class="card bg-card border-secondary mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <label class="form-label text-muted small">Seleccionar Clase</label>
+          <form action="<%= attendance_index_path %>" method="get" style="display: inline;">
+            <select name="session_id" class="form-select" onchange="this.form.submit()">
+              <option value="">Selecciona una clase</option>
+              <% @sessions.each do |session| %>
+                <option value="<%= session.id %>" <%= 'selected' if @selected_session&.id == session.id %>>
+                  <%= session.topic %> - <%= l(session.date, format: :short) %>
+                </option>
+              <% end %>
+            </select>
+          </form>
+        </div>
+        <% if @selected_session %>
+          <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <span class="text-muted">
+              <i class="bi bi-calendar3 me-2"></i>
+              <%= l(@selected_session.date, format: :long) %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. TABLA DE ASISTENCIA CON SU PROPIO FORMULARIO -->
+  <% if @students&.any? && @selected_session %>
+    <%= form_with url: attendance_index_path, method: :post, local: true do |f| %>
+      <%= f.hidden_field :session_id, value: @selected_session.id %>
+
+      <div class="card bg-card border-secondary">
+        <div class="card-header bg-transparent border-secondary">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-clipboard-check-fill text-primary me-2"></i>
+            Lista de Asistencia
+          </h5>
+        </div>
+        <div class="card-body">
+          <% @students.each do |student| %>
+            <% attendance = @attendance_data[student.id] || { present: false, grade: nil } %>
+            <div class="row align-items-center p-3 rounded student-item mb-2">
+              <!-- Estudiante -->
+              <div class="col-12 col-md-4 mb-2 mb-md-0">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="student-avatar"><%= student.name.first.upcase %></div>
+                  <span class="fw-medium"><%= student.name %></span>
+                </div>
+              </div>
+
+              <!-- CHECKBOX DENTRO DEL FORM -->
+              <div class="col-6 col-md-3 text-md-center">
+                <div class="form-check form-switch d-inline-flex align-items-center gap-2">
+                  <%= f.hidden_field "attendance[#{student.id}][present]", value: "0" %>
+                  <input class="form-check-input attendance-switch" type="checkbox"
+                         name="attendance[<%= student.id %>][present]" value="1"
+                         id="present_<%= student.id %>"
+                         <%= 'checked' if attendance[:present] %>
+                         onchange="toggleGrades('<%= student.id %>')">
+                  <label class="form-check-label" for="present_<%= student.id %>" id="label_<%= student.id %>">
+                    <% if attendance[:present] %>
+                      <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Presente</span>
+                    <% else %>
+                      <span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>Ausente</span>
+                    <% end %>
+                  </label>
+                </div>
+              </div>
+
+              <!-- RADIO BUTTONS DENTRO DEL FORM -->
+              <div class="col-6 col-md-5 text-md-center">
+                <div class="grade-selector d-inline-flex" id="grades_<%= student.id %>"
+                     style="<%= 'opacity: 0.3; pointer-events: none;' unless attendance[:present] %>">
+                  <% [2, 3, 4, 5].each do |grade| %>
+                    <input type="radio" class="btn-check" name="attendance[<%= student.id %>][grade]"
+                           id="grade_<%= student.id %>_<%= grade %>" value="<%= grade %>"
+                           <%= 'checked' if attendance[:grade] == grade %>>
+                    <label class="grade-btn grade-btn-<%= grade %>" for="grade_<%= student.id %>_<%= grade %>">
+                      <%= grade %>
+                    </label>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <!-- Botón dentro del form de la tabla -->
+        <div class="card-footer bg-transparent border-0">
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-save me-2"></i>Guardar Cambios
+            </button>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <!-- Mensaje sin estudiantes/clases -->
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-clipboard-x fs-1 d-block mb-3 opacity-50"></i>
+      <% if @students&.empty? %>
+        <p class="mb-1">No tiene clase seleccionada</p>
+      <% else %>
+        <p class="mb-1">Selecciona una clase</p>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+
+<script>
+    function toggleGrades(studentId) {
+        const checkbox = document.getElementById('present_' + studentId);
+        const grades = document.getElementById('grades_' + studentId);
+        const label = document.getElementById('label_' + studentId);
+
+        if (checkbox.checked) {
+            grades.style.opacity = '1';
+            grades.style.pointerEvents = 'auto';
+            label.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Presente</span>';
+        } else {
+            grades.style.opacity = '0.3';
+            grades.style.pointerEvents = 'none';
+            label.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>Ausente</span>';
+        }
+    }
+</script>
