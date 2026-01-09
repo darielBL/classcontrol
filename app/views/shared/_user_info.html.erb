@@ -1,7 +1,8 @@
 <div class="sidebar-footer ">
   <div class="d-flex align-items-center gap-3 mb-3">
     <div class="user-avatar">
-      <%= current_user.name.first.upcase %>
+      <%= (current_user&.name.presence || "U").first.upcase %>
+
 
     </div>
     <div class="flex-grow-1 overflow-hidden">
