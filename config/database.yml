@@ -49,6 +49,9 @@ production:
   cable:
     <<: *default
     url: <%= ENV['DATABASE_URL'] %>
+  queue:  # ← AGREGAR ESTA LÍNEA
+    <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
 
 #
 # Read [https://guides.rubyonrails.org/configuring.html#configuring-a-database](https://guides.rubyonrails.org/configuring.html#configuring-a-database)
