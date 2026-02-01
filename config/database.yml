@@ -49,7 +49,10 @@ production:
   cable:
     <<: *default
     url: <%= ENV['DATABASE_URL'] %>
-  queue:  # ← AGREGAR ESTA LÍNEA
+  queue:
+    <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
+  cache:  # ← AGREGAR ESTA LÍNEA
     <<: *default
     url: <%= ENV['DATABASE_URL'] %>
 
