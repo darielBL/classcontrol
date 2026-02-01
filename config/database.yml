@@ -43,8 +43,13 @@ test:
 # URL environment variable explicitly:
 #
 production:
-  <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  primary:
+    <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
+  cable:
+    <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
+
 #
 # Read [https://guides.rubyonrails.org/configuring.html#configuring-a-database](https://guides.rubyonrails.org/configuring.html#configuring-a-database)
 # for a full overview on how database connection configuration can be specified.
