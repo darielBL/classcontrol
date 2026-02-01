@@ -1,2 +1,1 @@
-web: bundle exec rails server -p $PORT -b '0.0.0.0'
-release: rails db:migrate db:seed
+web: bundle exec rails server -p $PORT -b 0.0.0.0 -e production
