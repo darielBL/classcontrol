@@ -43,13 +43,8 @@ test:
 # URL environment variable explicitly:
 #
 production:
-  adapter: mysql2              # ← AGREGAR ESTA LÍNEA FIJA
-  encoding: utf8mb4
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  database: dummy_db           # ← FIJO para build
-  username: dummy              # ← FIJO para build
-  password: dummy              # ← FIJO para build
-  host: 127.0.0.1              # ← localhost NO existe en build
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
 #
 # Read [https://guides.rubyonrails.org/configuring.html#configuring-a-database](https://guides.rubyonrails.org/configuring.html#configuring-a-database)
 # for a full overview on how database connection configuration can be specified.
