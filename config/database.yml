@@ -9,24 +9,24 @@
 # And be sure to use new-style password hashing:
 #   https://dev.mysql.com/doc/refman/5.7/en/password-hashing.html
 #
-#default: &default
-#  adapter: mysql2
-#  encoding: utf8mb4
-#  pool: <%#= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-#  username: root
-#  password: mysqlpass
-#  socket: /var/run/mysqld/mysqld.sock
+default: &default
+  adapter: mysql2
+  encoding: utf8mb4
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: root
+  password: mysqlpass
+  socket: /var/run/mysqld/mysqld.sock
 
-#development:
-#  <<: *default
-#  database: classcontrol_development
+development:
+  <<: *default
+  database: classcontrol_development
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
-#test:
-#  <<: *default
-#  database: classcontrol_test
+test:
+  <<: *default
+  database: classcontrol_test
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -42,48 +42,14 @@
 # the values provided in this file. Alternatively, you can specify a connection
 # URL environment variable explicitly:
 #
-#   production:
-#     url: <%= ENV["MY_APP_DATABASE_URL"] %>
+production:
+  <<: *default
+  database: <%= ENV.fetch("DB_NAME", "classcontrol_production") %>
+  username: <%= ENV.fetch("DB_USER", "root") %>
+  password: <%= ENV.fetch("DB_PASSWORD", "mysqlpass") %>
+  host: <%= ENV.fetch("DB_HOST", "127.0.0.1") %>
+
 #
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
-
-# PostgreSQL. Versions 9.3 and up are supported.
-#
-# Install the pg driver
-#   gem install pg
-#
-# Ensure the PostgreSQL gem is defined in your Gemfile
-#   gem "pg"
-#
-default: &default
-  adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  # Local development (mantén MySQL o instala Postgres local)
-  # username: tu_usuario_postgres
-  # password: tu_password_postgres
-  # database: classcontrol_development
-  # host: localhost
-
-development:
-  <<: *default
-  database: classcontrol_development
-
-test:
-  <<: *default
-  database: classcontrol_test
-
-production:
-  # Vercel Postgres se conecta vía DATABASE_URL automática
-  url: <%= ENV['DATABASE_URL'] %>
-
-# MySQL queda comentado para referencia futura
-# mysql_default: &mysql_default
-#   adapter: mysql2
-#   encoding: utf8mb4
-#   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-#   username: root
-#   password: mysqlpass
-#   socket: /var/run/mysqld/mysqld.sock
