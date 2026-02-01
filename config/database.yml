@@ -43,11 +43,7 @@ test:
 # URL environment variable explicitly:
 #
 production:
-  <<: *default
-  database: <%= ENV.fetch("DB_NAME", "classcontrol_production") %>
-  username: <%= ENV.fetch("DB_USER", "root") %>
-  password: <%= ENV.fetch("DB_PASSWORD", "mysqlpass") %>
-  host: <%= ENV.fetch("DB_HOST", "127.0.0.1") %>
+ url: <%= ENV["DATABASE_URL"] %>
 
 #
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
