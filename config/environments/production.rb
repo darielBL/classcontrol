@@ -89,5 +89,7 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   config.hosts.clear
+  # Railway build fix
+  config.assets.compile = true if ENV['SKIP_ASSETS']
 
 end
