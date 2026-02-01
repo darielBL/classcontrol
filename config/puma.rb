@@ -39,3 +39,15 @@ plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.
 pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
+
+# Railway REQUIERE esto EXACTO
+port        = ENV.fetch("PORT", 3000)
+host        = ENV.fetch("BIND", "0.0.0.0")
+bind        "tcp://#{host}:#{port}"
+
+threads_count = ENV.fetch("RAILS_MAX_THREADS") { 3 }
+threads threads_count, threads_count
+
+workers ENV.fetch("WEB_CONCURRENCY") { 1 }
+worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "production"
+preload_app!
