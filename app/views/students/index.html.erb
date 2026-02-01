@@ -5,10 +5,25 @@
       <h1 class="h2 fw-bold">Estudiantes</h1>
       <p class="text-muted mb-0">Gestiona los estudiantes de tu clase</p>
     </div>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#studentModal" onclick="openCreateModal()">
-      <i class="bi bi-plus-lg me-2"></i>Agregar Estudiante
-    </button>
+
+    <div class="d-flex gap-2">
+      <!-- Botón crear -->
+      <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#studentModal" onclick="openCreateModal()">
+        <i class="bi bi-plus-lg me-2"></i>Agregar Estudiante
+      </button>
+
+      <!-- Formulario IMPORTAR (mismo nivel) -->
+      <%= form_with url: import_students_path, method: :post, local: true, class: 'd-inline' do |f| %>
+        <%= f.file_field :file, accept: '.xlsx,.xls', class: 'd-none', id: 'excel_file' %>
+
+        <label for="excel_file" class="btn btn-success mb-0">
+          <i class="bi bi-file-earmark-excel me-2"></i>Importar Excel
+        </label>
+        <%= f.submit 'Procesar', class: 'btn btn-success d-none', id: 'submit_import' %>
+      <% end %>
+    </div>
   </div>
+
 
   <!-- Students List -->
   <div class="card bg-card border-secondary">
@@ -24,11 +39,13 @@
           <% @students.each do |student| %>
             <div class="student-item d-flex align-items-center justify-content-between p-3 rounded">
               <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-primary text-white fs-6 px-3 py-2">#<%= student.list_no %></span>
                 <div class="student-avatar">
                   <%= student.name.first.upcase %>
                 </div>
                 <span class="fw-medium"><%= student.name %></span>
               </div>
+
               <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-ghost" onclick="openEditModal('<%= student.id %>', '<%= j(student.name) %>')">
                   <i class="bi bi-pencil"></i>
@@ -62,9 +79,19 @@
       <%= form_with url: students_path, method: :post, id: "studentForm", local: true do |f| %>
         <div class="modal-body">
           <input type="hidden" name="_method" id="formMethod" value="post">
+
+          <!-- CAMPO NÚMERO DE LISTA -->
           <div class="mb-3">
-            <label for="studentName" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="studentName" name="student[name]" placeholder="Nombre del estudiante" required>
+            <label for="studentListNo" class="form-label">Número de lista <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="studentListNo" name="student[list_no]"
+                   placeholder="1" min="1" required>
+          </div>
+
+          <!-- CAMPO NOMBRE -->
+          <div class="mb-3">
+            <label for="studentName" class="form-label">Nombre <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="studentName" name="student[name]"
+                   placeholder="Nombre del estudiante" required>
           </div>
         </div>
         <div class="modal-footer border-secondary">
@@ -75,6 +102,7 @@
     </div>
   </div>
 </div>
+
 
 
 <!-- Delete Confirmation Modal -->
@@ -108,14 +136,16 @@
         document.getElementById('studentForm').action = '<%= students_path %>';
         document.getElementById('formMethod').value = 'post';
         document.getElementById('studentName').value = '';
+        document.getElementById('studentListNo').value = '';  // ← NUEVO
         document.getElementById('studentSubmitBtn').textContent = 'Crear';
     }
 
-    function openEditModal(id, name) {
+    function openEditModal(id, name, list_no) {  // ← Agrega list_no
         document.getElementById('studentModalTitle').textContent = 'Editar Estudiante';
         document.getElementById('studentForm').action = '/students/' + id;
         document.getElementById('formMethod').value = 'patch';
         document.getElementById('studentName').value = name;
+        document.getElementById('studentListNo').value = list_no;  // ← NUEVO
         document.getElementById('studentSubmitBtn').textContent = 'Guardar';
         new bootstrap.Modal(document.getElementById('studentModal')).show();
     }
@@ -125,4 +155,13 @@
         document.getElementById('deleteForm').action = '/students/' + id;
         new bootstrap.Modal(document.getElementById('deleteModal')).show();
     }
+
+    // Script MÍNIMO solo para mostrar botón procesar
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('excel_file').addEventListener('change', function() {
+            if (this.files.length > 0) {
+                document.getElementById('submit_import').classList.remove('d-none');
+            }
+        });
+    });
 </script>

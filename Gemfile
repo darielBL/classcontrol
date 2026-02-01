@@ -64,3 +64,5 @@ end
 gem 'importmap-rails'
 
 gem 'devise'
+
+gem 'roo'  # Para leer Excel
