@@ -5,7 +5,7 @@ gem "rails", "~> 8.0.4"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use mysql as the database for Active Record
-# gem "mysql2", "~> 0.5"
+gem "mysql2", "~> 0.5"
 
 # Using postgree for vercel
 
