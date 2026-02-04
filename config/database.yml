@@ -54,6 +54,46 @@ production:
   ssl_mode: :verify_identity  # ← SSL OBLIGATORIO
   sslca: /etc/ssl/certs/ca-certificates.crt  # ← CERTIFICADO SSL
 
+  primary:
+    <<: *default
+    adapter: mysql2
+    username: avnadmin
+    password: <%= ENV["MYSQL_PASSWORD"] %>
+    host: <%= ENV["MYSQL_HOST"] %>
+    port: 3306
+    database: defaultdb
+    ssl_mode: :verify_identity
+
+    cable:
+      <<: *default
+      adapter: mysql2
+      username: avnadmin
+      password: <%= ENV["MYSQL_PASSWORD"] %>
+      host: <%= ENV["MYSQL_HOST"] %>
+      port: 3306
+      database: defaultdb
+      ssl_mode: :verify_identity
+
+    queue:
+      <<: *default
+      adapter: mysql2
+      username: avnadmin
+      password: <%= ENV["MYSQL_PASSWORD"] %>
+      host: <%= ENV["MYSQL_HOST"] %>
+      port: 3306
+      database: defaultdb
+      ssl_mode: :verify_identity
+
+    cache:
+      <<: *default
+      adapter: mysql2
+      username: avnadmin
+      password: <%= ENV["MYSQL_PASSWORD"] %>
+      host: <%= ENV["MYSQL_HOST"] %>
+      port: 3306
+      database: defaultdb
+      ssl_mode: :verify_identity
+      
 #
 # Read [https://guides.rubyonrails.org/configuring.html#configuring-a-database](https://guides.rubyonrails.org/configuring.html#configuring-a-database)
 # for a full overview on how database connection configuration can be specified.
