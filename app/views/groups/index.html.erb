@@ -1,0 +1,169 @@
+<div class="animate-fade-in">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 fw-bold">Grupos </h1>
+      <p class="text-muted mb-0">Gestiona tus grupos</p>
+    </div>
+
+    <div class="d-flex gap-2">
+      <!-- Botón crear -->
+      <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#groupModal" onclick="openCreateModal()">
+        <i class="bi bi-plus-lg me-2"></i>Agregar grupo
+      </button>
+
+      <!-- Formulario IMPORTAR (mismo nivel) -->
+      <%#= form_with url: import_students_path, method: :post, local: true, class: 'd-inline' do |f| %>
+        <%#= f.file_field :file, accept: '.xlsx,.xls', class: 'd-none', id: 'excel_file' %>
+
+<!--        <label for="excel_file" class="btn btn-success mb-0">-->
+<!--          <i class="bi bi-file-earmark-excel me-2"></i>Importar Excel-->
+<!--        </label>-->
+        <%#= f.submit 'Procesar', class: 'btn btn-success d-none', id: 'submit_import' %>
+      <%# end %>
+    </div>
+  </div>
+
+
+  <!-- Students List -->
+  <div class="card bg-card border-secondary">
+    <div class="card-header bg-transparent border-secondary">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-people-fill text-primary me-2"></i>
+        Tus grupos (<%= @groups&.count %>)
+      </h5>
+    </div>
+    <div class="card-body">
+      <% if @groups&.any? %>
+        <div class="d-flex flex-column gap-2">
+          <% @groups.each do |group| %>
+            <div class="student-item d-flex align-items-center justify-content-between p-3 rounded">
+              <div class="d-flex align-items-center gap-3">
+                <div class="student-avatar">
+                  <%= group.name.first.upcase %>
+                </div>
+                <span class="fw-medium"><%= group.name %></span>
+              </div>
+
+              <%= link_to group_dashboard_path(group), class: "btn btn-primary" do %>
+                <i class="bi bi-gear-fill me-1"></i> Administrar
+              <% end %>
+
+<!--              <div class="d-flex gap-2">-->
+                <%#= link_to students_path, class: "btn btn-primary" do %>
+<!--                  <i class="bi bi-people-fill"></i>-->
+                <%# end %>
+<!--                <button class="btn btn-sm btn-ghost" onclick="openEditModal('<%= group.id %>', '<%= j(group.name) %>')">-->
+<!--                  <i class="bi bi-pencil"></i>-->
+<!--                </button>-->
+<!--                <button class="btn btn-sm btn-ghost text-danger" onclick="openDeleteModal('<%= group.id %>', '<%= j(group.name) %>')">-->
+<!--                  <i class="bi bi-trash"></i>-->
+<!--                </button>-->
+<!--              </div>-->
+
+
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-people fs-1 d-block mb-3 opacity-50"></i>
+          <p class="mb-1">No hay grupos registrados</p>
+          <small>Comienza agregando tu primer grupo</small>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal fade" id="groupModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-card border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title" id="groupModalTitle">Nuevo grupo</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+
+      <%= form_with url: groups_path, method: :post, id: "groupForm", local: true do |f| %>
+        <div class="modal-body">
+          <input type="hidden" name="_method" id="formMethod" value="post">
+
+          <!-- CAMPO NOMBRE -->
+          <div class="mb-3">
+            <label for="groupName" class="form-label">Nombre del grupo <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="groupName" name="group[name]"
+                   placeholder="Nombre del grupo" required>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="groupSubmitBtn">Crear</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-card border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">¿Eliminar grupo?</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-0">
+          Esta acción eliminará a "<span id="deleteGroupName"></span>" y todos sus estudiantes. Esta acción no se puede deshacer.
+        </p>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form action="" method="post" id="deleteForm">
+          <input type="hidden" name="_method" value="delete">
+          <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+          <button type="submit" class="btn btn-danger">Eliminar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        document.getElementById('groupModalTitle').textContent = 'Nuevo Grupo';
+        document.getElementById('groupForm').action = '<%= groups_path %>';
+        document.getElementById('formMethod').value = 'post';
+        document.getElementById('groupName').value = '';
+        document.getElementById('groupListNo').value = '';  // ← NUEVO
+        document.getElementById('groupSubmitBtn').textContent = 'Crear';
+    }
+
+    function openEditModal(id, name, list_no) {  // ← Agrega list_no
+        document.getElementById('groupModalTitle').textContent = 'Editar Grupo';
+        document.getElementById('groupForm').action = '/groups/' + id;
+        document.getElementById('formMethod').value = 'patch';
+        document.getElementById('groupName').value = name;
+        document.getElementById('groupSubmitBtn').textContent = 'Guardar';
+        new bootstrap.Modal(document.getElementById('groupModal')).show();
+    }
+
+    function openDeleteModal(id, name) {
+        document.getElementById('deleteGroupName').textContent = name;
+        document.getElementById('deleteForm').action = '/groups/' + id;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    // Script MÍNIMO solo para mostrar botón procesar
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('excel_file').addEventListener('change', function() {
+            if (this.files.length > 0) {
+                document.getElementById('submit_import').classList.remove('d-none');
+            }
+        });
+    });
+</script>

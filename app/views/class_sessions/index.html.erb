@@ -15,11 +15,11 @@
     <div class="card-header bg-transparent border-secondary">
       <h5 class="card-title mb-0">
         <i class="bi bi-book-fill text-primary me-2"></i>
-        Lista de Clases (<%= @class_sessions.count %>)
+        Lista de Clases (<%= @class_sessions&.count %>)
       </h5>
     </div>
     <div class="card-body">
-      <% if @class_sessions.any? %>
+      <% if @class_sessions&.any? %>
         <div class="table-responsive">
           <table class="table table-dark table-hover align-middle mb-0">
             <thead>
@@ -76,7 +76,7 @@
         <h5 class="modal-title" id="classModalTitle">Nueva Clase</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <%= form_with url: class_sessions_path, method: :post, id: "classForm", local: true do |f| %>
+      <%= form_with url: group_class_sessions_path, method: :post, id: "classForm", local: true do |f| %>
         <div class="modal-body">
           <input type="hidden" name="_method" id="formMethod" value="post">
 
@@ -143,7 +143,7 @@
     // Abrir modal para crear nueva clase
     function openCreateModal() {
         document.getElementById('classModalTitle').textContent = 'Nueva Clase';
-        document.getElementById('classForm').action = '<%= class_sessions_path %>';
+        document.getElementById('classForm').action = '<%= group_class_sessions_path %>';
         document.getElementById('formMethod').value = 'post';
         document.getElementById('classTopic').value = '';
         document.getElementById('classDate').value = getTodayDate();

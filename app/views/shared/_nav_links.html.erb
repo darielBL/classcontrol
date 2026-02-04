@@ -1,17 +1,64 @@
 <nav class="nav flex-column gap-2">
-  <%= link_to dashboard_index_path, class: "nav-link sidebar-link #{'active' if current_page?(dashboard_index_path)}" do %>
-    <i class="bi bi-grid-1x2-fill me-2"></i> Panel
+  <!-- Dashboard Principal -->
+  <%= link_to groups_path, class: "nav-link sidebar-link #{'active' if current_page?(groups_path)}" do %>
+    <i class="bi bi-house-door-fill me-2"></i>Inicio
   <% end %>
 
-  <%= link_to students_path, class: "nav-link sidebar-link #{'active' if current_page?(students_path)}" do %>
-    <i class="bi bi-people-fill me-2"></i> Estudiantes
-  <% end %>
+  <!-- Separador -->
+  <div class="my-2 border-top border-secondary"></div>
 
-  <%= link_to class_sessions_path, class: "nav-link sidebar-link #{'active' if current_page?(class_sessions_path)}" do %>
-    <i class="bi bi-book-fill me-2"></i> Clases
-  <% end %>
+  <!-- Lista de Grupos del Usuario -->
+  <div class="mb-2">
+    <small class="text-muted text-uppercase ms-3 mb-2 d-block">Mis Grupos</small>
+    <% if current_user.groups.any? %>
+      <% current_user.groups.each do |group| %>
+        <div class="group-item mb-2">
+          <%= link_to group_dashboard_path(group),
+                      class: "nav-link sidebar-link #{'active' if current_page?(group_dashboard_path(group))}" do %>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="group-avatar me-2">
+                  <%= group.name.first.upcase %>
+                </div>
+                <span><%= group.name %></span>
+              </div>
+              <div class="group-stats">
+                <span class="badge bg-primary bg-opacity-25 text-primary">
+                  <%= group.students.count %>
+                </span>
+              </div>
+            </div>
+          <% end %>
 
-  <%= link_to attendance_index_path, class: "nav-link sidebar-link #{'active' if current_page?(attendance_index_path)}" do %>
-    <i class="bi bi-clipboard-check-fill me-2"></i> Asistencia
-  <% end %>
+          <!-- Submenú del grupo (solo se muestra si es el grupo activo) -->
+          <% if current_page?(group_dashboard_path(group)) ||
+                current_page?(group_students_path(group)) ||
+                current_page?(group_class_sessions_path(group)) ||
+                current_page?(group_attendance_index_path(group)) %>
+            <div class="group-submenu ps-4 mt-1">
+              <%= link_to group_students_path(group),
+                          class: "nav-link sidebar-subitem #{'active' if current_page?(group_students_path(group))}" do %>
+                <i class="bi bi-people-fill me-2"></i>Estudiantes
+              <% end %>
+
+              <%= link_to group_class_sessions_path(group),
+                          class: "nav-link sidebar-subitem #{'active' if current_page?(group_class_sessions_path(group))}" do %>
+                <i class="bi bi-calendar-event-fill me-2"></i>Clases
+              <% end %>
+
+              <%= link_to group_attendance_index_path(group),
+                          class: "nav-link sidebar-subitem #{'active' if current_page?(group_attendance_index_path(group))}" do %>
+                <i class="bi bi-clipboard-check-fill me-2"></i>Asistencia
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="px-3 py-2 text-muted small">
+        <i class="bi bi-info-circle me-1"></i>
+        No tienes grupos creados
+      </div>
+    <% end %>
+  </div>
 </nav>

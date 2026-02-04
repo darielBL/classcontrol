@@ -1,30 +1,27 @@
 <div class="animate-fade-in">
-  <!-- 1. HEADER con BOTÓN (siempre visible cuando hay clase) -->
+  <!-- 1. HEADER -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h1 class="h2 fw-bold">Registro de Asistencia</h1>
-      <p class="text-muted mb-0">Registra asistencia y notas por clase</p>
+      <h1 class="h2 fw-bold">Registro de Asistencia - <%= @group.name %></h1>
+      <p class="text-muted mb-0">Asistencia obligatoria, notas opcionales</p>
     </div>
-    <% if @selected_session %>
-      <%= form_with url: attendance_index_path, method: :post, local: true do |f| %>
-        <%= f.hidden_field :session_id, value: @selected_session.id %>
-
-      <% end %>
-    <% end %>
+    <div class="d-flex gap-2">
+      <%= link_to 'Volver al Dashboard', group_dashboard_path(@group), class: 'btn btn-outline-secondary' %>
+    </div>
   </div>
 
-  <!-- 2. SELECTOR DE CLASES (SIEMPRE VISIBLE) -->
+  <!-- 2. SELECTOR DE CLASES -->
   <div class="card bg-card border-secondary mb-4">
     <div class="card-body">
       <div class="row align-items-center">
         <div class="col-md-6">
           <label class="form-label text-muted small">Seleccionar Clase</label>
-          <form action="<%= attendance_index_path %>" method="get" style="display: inline;">
+          <form action="<%= group_attendance_index_path(@group) %>" method="get" style="display: inline;">
             <select name="session_id" class="form-select" onchange="this.form.submit()">
               <option value="">Selecciona una clase</option>
               <% @sessions.each do |session| %>
                 <option value="<%= session.id %>" <%= 'selected' if @selected_session&.id == session.id %>>
-                  <%= session.topic %> - <%= l(session.date, format: :short) %>
+                  <%= session.topic %> - <%= session.date.strftime('%d/%m/%Y') %>
                 </option>
               <% end %>
             </select>
@@ -34,7 +31,7 @@
           <div class="col-md-6 text-md-end mt-3 mt-md-0">
             <span class="text-muted">
               <i class="bi bi-calendar3 me-2"></i>
-              <%= l(@selected_session.date, format: :long) %>
+              <%= @selected_session.date.strftime('%A, %d de %B de %Y') %>
             </span>
           </div>
         <% end %>
@@ -42,17 +39,27 @@
     </div>
   </div>
 
-  <!-- 3. TABLA DE ASISTENCIA CON SU PROPIO FORMULARIO -->
+  <!-- 3. TABLA DE ASISTENCIA -->
   <% if @students&.any? && @selected_session %>
-    <%= form_with url: attendance_index_path, method: :post, local: true do |f| %>
+    <%= form_with url: group_attendance_index_path(@group), method: :post, local: true do |f| %>
       <%= f.hidden_field :session_id, value: @selected_session.id %>
 
       <div class="card bg-card border-secondary">
         <div class="card-header bg-transparent border-secondary">
-          <h5 class="card-title mb-0">
-            <i class="bi bi-clipboard-check-fill text-primary me-2"></i>
-            Lista de Asistencia
-          </h5>
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-clipboard-check-fill text-primary me-2"></i>
+              Lista de Asistencia - <%= @selected_session.topic %>
+            </h5>
+            <div>
+              <span class="badge bg-primary">
+                <%= @selected_session.date.strftime('%d/%m/%Y') %>
+              </span>
+              <span class="badge bg-info ms-2">
+                Estudiantes: <%= @students.count %>
+              </span>
+            </div>
+          </div>
         </div>
         <div class="card-body">
           <% @students.each do |student| %>
@@ -62,11 +69,15 @@
               <div class="col-12 col-md-4 mb-2 mb-md-0">
                 <div class="d-flex align-items-center gap-3">
                   <div class="student-avatar"><%= student.name.first.upcase %></div>
-                  <span class="fw-medium"><%= student.name %></span>
+                  <div>
+                    <span class="fw-medium"><%= student.name %></span>
+                    <br>
+                    <small class="text-muted">#<%= student.list_no %></small>
+                  </div>
                 </div>
               </div>
 
-              <!-- CHECKBOX DENTRO DEL FORM -->
+              <!-- CHECKBOX ASISTENCIA -->
               <div class="col-6 col-md-3 text-md-center">
                 <div class="form-check form-switch d-inline-flex align-items-center gap-2">
                   <%= f.hidden_field "attendance[#{student.id}][present]", value: "0" %>
@@ -74,7 +85,7 @@
                          name="attendance[<%= student.id %>][present]" value="1"
                          id="present_<%= student.id %>"
                          <%= 'checked' if attendance[:present] %>
-                         onchange="toggleGrades('<%= student.id %>')">
+                         onchange="toggleGradeOptions('<%= student.id %>')">
                   <label class="form-check-label" for="present_<%= student.id %>" id="label_<%= student.id %>">
                     <% if attendance[:present] %>
                       <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Presente</span>
@@ -85,15 +96,26 @@
                 </div>
               </div>
 
-              <!-- RADIO BUTTONS DENTRO DEL FORM -->
+              <!-- OPCIONES DE NOTA (con opción "Sin nota") -->
               <div class="col-6 col-md-5 text-md-center">
                 <div class="grade-selector d-inline-flex" id="grades_<%= student.id %>"
-                     style="<%= 'opacity: 0.3; pointer-events: none;' unless attendance[:present] %>">
+                     style="<%= 'opacity: 0.5; pointer-events: none;' unless attendance[:present] %>">
+                  <!-- Opción "Sin nota" -->
+                  <input type="radio" class="btn-check" name="attendance[<%= student.id %>][grade]"
+                         id="grade_<%= student.id %>_none" value=""
+                         <%= 'checked' if attendance[:grade].nil? || attendance[:grade].blank? %>>
+                  <label class="grade-btn grade-btn-none" for="grade_<%= student.id %>_none"
+                         title="Sin calificación">
+                    <i class="bi bi-dash-lg"></i>
+                  </label>
+
+                  <!-- Opciones de nota 2-5 -->
                   <% [2, 3, 4, 5].each do |grade| %>
                     <input type="radio" class="btn-check" name="attendance[<%= student.id %>][grade]"
                            id="grade_<%= student.id %>_<%= grade %>" value="<%= grade %>"
-                           <%= 'checked' if attendance[:grade] == grade %>>
-                    <label class="grade-btn grade-btn-<%= grade %>" for="grade_<%= student.id %>_<%= grade %>">
+                           <%= 'checked' if attendance[:grade]&.to_s == grade.to_s %>>
+                    <label class="grade-btn grade-btn-<%= grade %>" for="grade_<%= student.id %>_<%= grade %>"
+                           title="Calificación: <%= grade %>">
                       <%= grade %>
                     </label>
                   <% end %>
@@ -102,12 +124,21 @@
             </div>
           <% end %>
         </div>
-        <!-- Botón dentro del form de la tabla -->
+        <!-- Botón guardar -->
         <div class="card-footer bg-transparent border-0">
-          <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-success">
-              <i class="bi bi-save me-2"></i>Guardar Cambios
-            </button>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Selecciona "Presente" y luego califica (opcional)
+              </span>
+            </div>
+            <div>
+              <%= link_to 'Cancelar', group_attendance_index_path(@group), class: 'btn btn-outline-secondary me-2' %>
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-save me-2"></i>Guardar Asistencia
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -116,18 +147,25 @@
     <!-- Mensaje sin estudiantes/clases -->
     <div class="text-center py-5 text-muted">
       <i class="bi bi-clipboard-x fs-1 d-block mb-3 opacity-50"></i>
-      <% if @students&.empty? %>
-        <p class="mb-1">No tiene clase seleccionada</p>
+      <% if @sessions.empty? %>
+        <p class="mb-1">No hay clases creadas en este grupo</p>
+        <small>
+          <%= link_to 'Crea tu primera clase', new_group_class_session_path(@group) %> para registrar asistencia
+        </small>
+      <% elsif @selected_session.nil? %>
+        <p class="mb-1">Selecciona una clase para registrar asistencia</p>
       <% else %>
-        <p class="mb-1">Selecciona una clase</p>
+        <p class="mb-1">No hay estudiantes en este grupo</p>
+        <small>
+          <%= link_to 'Agrega estudiantes', group_students_path(@group) %> para registrar asistencia
+        </small>
       <% end %>
     </div>
   <% end %>
 </div>
 
-
 <script>
-    function toggleGrades(studentId) {
+    function toggleGradeOptions(studentId) {
         const checkbox = document.getElementById('present_' + studentId);
         const grades = document.getElementById('grades_' + studentId);
         const label = document.getElementById('label_' + studentId);
@@ -137,9 +175,22 @@
             grades.style.pointerEvents = 'auto';
             label.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Presente</span>';
         } else {
-            grades.style.opacity = '0.3';
+            grades.style.opacity = '0.5';
             grades.style.pointerEvents = 'none';
             label.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>Ausente</span>';
+
+            // Cuando está ausente, seleccionar automáticamente "Sin nota"
+            const noneRadio = document.getElementById('grade_' + studentId + '_none');
+            if (noneRadio) {
+                noneRadio.checked = true;
+            }
         }
     }
+
+    // Inicializar el estado de todos los estudiantes al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        <% @students.each do |student| %>
+        toggleGradeOptions('<%= student.id %>');
+        <% end %>
+    });
 </script>

@@ -22,4 +22,28 @@ module ApplicationHelper
       'bg-grade-2'
     end
   end
+  def grade_color(grade)
+    return 'text-muted' if grade.nil?
+
+    case grade
+    when 4..5
+      'text-success'
+    when 3...4
+      'text-warning'
+    else
+      'text-danger'
+    end
+  end
+
+  def grade_badge(grade)
+    return '<span class="badge bg-secondary">-</span>'.html_safe if grade.nil?
+
+    color = case grade
+            when 4..5 then 'bg-success'
+            when 3...4 then 'bg-warning'
+            else 'bg-danger'
+            end
+
+    "<span class='badge #{color}'>#{grade}</span>".html_safe
+  end
 end

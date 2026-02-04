@@ -13,7 +13,7 @@
       </button>
 
       <!-- Formulario IMPORTAR (mismo nivel) -->
-      <%= form_with url: import_students_path, method: :post, local: true, class: 'd-inline' do |f| %>
+      <%= form_with url: import_group_students_path, method: :post, local: true, class: 'd-inline' do |f| %>
         <%= f.file_field :file, accept: '.xlsx,.xls', class: 'd-none', id: 'excel_file' %>
 
         <label for="excel_file" class="btn btn-success mb-0">
@@ -76,7 +76,7 @@
         <h5 class="modal-title" id="studentModalTitle">Nuevo Estudiante</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <%= form_with url: students_path, method: :post, id: "studentForm", local: true do |f| %>
+      <%= form_with url: group_students_path, method: :post, id: "studentForm", local: true do |f| %>
         <div class="modal-body">
           <input type="hidden" name="_method" id="formMethod" value="post">
 
@@ -133,7 +133,7 @@
 <script>
     function openCreateModal() {
         document.getElementById('studentModalTitle').textContent = 'Nuevo Estudiante';
-        document.getElementById('studentForm').action = '<%= students_path %>';
+        document.getElementById('studentForm').action = '<%= group_students_path %>';
         document.getElementById('formMethod').value = 'post';
         document.getElementById('studentName').value = '';
         document.getElementById('studentListNo').value = '';  // ← NUEVO

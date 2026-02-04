@@ -2,18 +2,21 @@ class StudentsController < ApplicationController
   before_action :set_student, only: [:edit, :update, :destroy]
 
   def index
-    @students = current_user.students
+    @students = current_user.students.includes(:group)
   end
-
+  def group_index
+    @group = current_user.groups.find(params[:group_id])
+    @students = @group.students
+  end
   def new
-    @student = current_user.students.build
+    @student = @group.students.new
   end
 
   def create
-    @student = current_user.students.build(student_params)
-
+    @student = @group.students.new(student_params)
+    @student.user = current_user
     if @student.save
-      redirect_to students_path, notice: 'Estudiante creado exitosamente.'
+      redirect_to group_dashboard_path(@group), notice: 'Estudiante creado exitosamente.'
     else
       render :new, status: :unprocessable_entity
     end
@@ -24,7 +27,7 @@ class StudentsController < ApplicationController
 
   def update
     if @student.update(student_params)
-      redirect_to students_path, notice: 'Estudiante actualizado exitosamente.'
+      redirect_to group_students_path, notice: 'Estudiante actualizado exitosamente.'
     else
       render :edit, status: :unprocessable_entity
     end
@@ -32,11 +35,11 @@ class StudentsController < ApplicationController
 
   def destroy
     @student.destroy
-    redirect_to students_path, notice: 'Estudiante eliminado exitosamente.'
+    redirect_to group_students_path, notice: 'Estudiante eliminado exitosamente.'
   end
 
   def import
-    return redirect_to students_path, alert: "❌ Selecciona un archivo" unless params[:file]
+    return redirect_to group_students_path, alert: "❌ Selecciona un archivo" unless params[:file]
 
     require 'roo'
 
@@ -60,15 +63,18 @@ class StudentsController < ApplicationController
       end
     end
 
-    redirect_to students_path, notice: "✅ #{created} estudiantes importados"
+    redirect_to group_students_path, notice: "✅ #{created} estudiantes importados"
   rescue => e
-    redirect_to students_path, alert: "❌ Error: #{e.message}"
+    redirect_to group_students_path, alert: "❌ Error: #{e.message}"
   end
 
 
 
   private
 
+  def set_group
+    @group = current_user.groups.find(params[:group_id])
+  end
   def set_student
     @student = current_user.students.find(params[:id])
   end

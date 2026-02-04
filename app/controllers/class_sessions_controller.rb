@@ -1,8 +1,9 @@
 class ClassSessionsController < ApplicationController
+  before_action :set_group
   before_action :set_class_session, only: [:show, :edit, :update, :destroy]
 
   def index
-    @class_sessions = current_user.class_sessions.order(date: :desc)
+    @class_sessions = @group.class_sessions.order(date: :desc)
   end
 
   def show
@@ -10,19 +11,20 @@ class ClassSessionsController < ApplicationController
   end
 
   def new
-    @class_session = current_user.class_sessions.build(date: Date.today)
+    @class_session = @group.class_sessions.build(date: Date.today)
   end
 
   def create
-    @class_session = current_user.class_sessions.build(class_session_params)
+    @class_session = @group.class_sessions.build(class_session_params)
+    @class_session.user = current_user
 
     if @class_session.save
-      # Crear registros de asistencia vacíos para todos los estudiantes
-      current_user.students.each do |student|
+      # Crear registros de asistencia vacíos para todos los estudiantes DEL GRUPO
+      @group.students.each do |student|
         @class_session.attendances.create(student: student, present: false)
       end
 
-      redirect_to class_sessions_path, notice: 'Clase creada exitosamente.'
+      redirect_to group_class_sessions_path(@group), notice: 'Clase creada exitosamente.'
     else
       render :new, status: :unprocessable_entity
     end
@@ -33,7 +35,7 @@ class ClassSessionsController < ApplicationController
 
   def update
     if @class_session.update(class_session_params)
-      redirect_to class_sessions_path, notice: 'Clase actualizada exitosamente.'
+      redirect_to group_class_sessions_path(@group), notice: 'Clase actualizada exitosamente.'
     else
       render :edit, status: :unprocessable_entity
     end
@@ -41,13 +43,17 @@ class ClassSessionsController < ApplicationController
 
   def destroy
     @class_session.destroy
-    redirect_to class_sessions_path, notice: 'Clase eliminada exitosamente.'
+    redirect_to group_class_sessions_path(@group), notice: 'Clase eliminada exitosamente.'
   end
 
   private
 
+  def set_group
+    @group = current_user.groups.find(params[:group_id])
+  end
+
   def set_class_session
-    @class_session = current_user.class_sessions.find(params[:id])
+    @class_session = @group.class_sessions.find(params[:id])
   end
 
   def class_session_params

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_12_193728) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_04_043113) do
   create_table "attendances", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "student_id", null: false
     t.bigint "class_session_id", null: false
@@ -30,7 +30,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_193728) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "group_id", null: false
+    t.index ["group_id"], name: "index_class_sessions_on_group_id"
     t.index ["user_id"], name: "index_class_sessions_on_user_id"
+  end
+
+  create_table "groups", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_groups_on_user_id"
   end
 
   create_table "students", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -39,6 +49,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_193728) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "list_no"
+    t.bigint "group_id", null: false
+    t.index ["group_id"], name: "index_students_on_group_id"
     t.index ["user_id"], name: "index_students_on_user_id"
   end
 
@@ -58,6 +70,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_193728) do
   add_foreign_key "attendances", "class_sessions"
   add_foreign_key "attendances", "students"
   add_foreign_key "attendances", "users"
+  add_foreign_key "class_sessions", "groups"
   add_foreign_key "class_sessions", "users"
+  add_foreign_key "groups", "users"
   add_foreign_key "students", "users"
 end
