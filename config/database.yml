@@ -43,18 +43,16 @@ test:
 # URL environment variable explicitly:
 #
 production:
-  primary:
-    <<: *default
-    url: <%= ENV['DATABASE_URL'] %>
-  cable:
-    <<: *default
-    url: <%= ENV['DATABASE_URL'] %>
-  queue:
-    <<: *default
-    url: <%= ENV['DATABASE_URL'] %>
-  cache:  # ← AGREGAR ESTA LÍNEA
-    <<: *default
-    url: <%= ENV['DATABASE_URL'] %>
+  adapter: mysql2
+  encoding: utf8mb4
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: avnadmin  # ← USUARIO FIJO DE AIVEN
+  password: <%= ENV["MYSQL_PASSWORD"] %>  # ← PASSWORD DESDE VARIABLE
+  host: <%= ENV["MYSQL_HOST"] %>  # ← HOST DESDE VARIABLE
+  port: 3306  # ← PUERTO FIJO DE AIVEN
+  database: defaultdb  # ← DATABASE FIJA INICIAL DE AIVEN
+  ssl_mode: :verify_identity  # ← SSL OBLIGATORIO
+  sslca: /etc/ssl/certs/ca-certificates.crt  # ← CERTIFICADO SSL
 
 #
 # Read [https://guides.rubyonrails.org/configuring.html#configuring-a-database](https://guides.rubyonrails.org/configuring.html#configuring-a-database)
