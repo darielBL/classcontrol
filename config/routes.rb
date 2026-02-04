@@ -17,7 +17,14 @@ Rails.application.routes.draw do
     resources :attendance, only: [:index, :create, :update]
   end
 
-  # Otras rutas globales (si las necesitas)
-  # resources :students, only: [:index, :show]  # Opcional
-  # NO incluyas: resources :class_sessions
+  # Health check para Koyeb
+  get '/up', to: ->(env) {
+    begin
+      # Verifica que la DB funciona
+      ActiveRecord::Base.connection.execute('SELECT 1')
+      [200, { 'Content-Type' => 'text/plain' }, ['OK']]
+    rescue => e
+      [500, { 'Content-Type' => 'text/plain' }, ["DB Error: #{e.message}"]]
+    end
+  }
 end
