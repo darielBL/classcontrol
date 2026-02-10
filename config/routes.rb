@@ -18,5 +18,11 @@ Rails.application.routes.draw do
   end
 
   # Health check para Koyeb
-  get '/up', to: ->(env) {[200,{},['OK']]}
+  get '/up', to: ->(env) do
+    # Verifica conexión a base de datos si existe
+    ActiveRecord::Base.connection.execute("SELECT 1") if defined?(ActiveRecord)
+    [200, { 'Content-Type' => 'text/plain' }, ['OK']]
+  rescue => e
+    [500, { 'Content-Type' => 'text/plain' }, ["Error: #{e.message}"]]
+  end
 end
