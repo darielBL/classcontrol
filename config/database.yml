@@ -3,66 +3,30 @@ default: &default
   adapter: mysql2
   encoding: utf8mb4
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password: mysqlpass
-  socket: /var/run/mysqld/mysqld.sock
-  ssl_mode: :disabled
-  sslverify: false
+  timeout: 5000
 
 development:
   <<: *default
   database: classcontrol_development
+  username: root
+  password: mysqlpass
+  socket: /var/run/mysqld/mysqld.sock
 
 test:
   <<: *default
   database: classcontrol_test
+  username: root
+  password: mysqlpass
+  socket: /var/run/mysqld/mysqld.sock
 
-# PRODUCCIÓN CON TODAS LAS CONEXIONES
+# PRODUCCIÓN SIMPLE - Usa variables de entorno
 production:
-  primary:
-    adapter: mysql2
-    encoding: utf8mb4
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: avnadmin
-    password: <%= ENV["MYSQL_PASSWORD"] %>
-    host: <%= ENV["MYSQL_HOST"] %>
-    port: 3306
-    database: defaultdb
-    ssl_mode: :verify_identity
-    sslca: /etc/ssl/certs/ca-certificates.crt
-
-  cable:
-    adapter: mysql2
-    encoding: utf8mb4
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: avnadmin
-    password: <%= ENV["MYSQL_PASSWORD"] %>
-    host: <%= ENV["MYSQL_HOST"] %>
-    port: 3306
-    database: defaultdb
-    ssl_mode: :verify_identity
-    sslca: /etc/ssl/certs/ca-certificates.crt
-
-  queue:
-    adapter: mysql2
-    encoding: utf8mb4
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: avnadmin
-    password: <%= ENV["MYSQL_PASSWORD"] %>
-    host: <%= ENV["MYSQL_HOST"] %>
-    port: 3306
-    database: defaultdb
-    ssl_mode: :verify_identity
-    sslca: /etc/ssl/certs/ca-certificates.crt
-
-  cache:
-    adapter: mysql2
-    encoding: utf8mb4
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: avnadmin
-    password: <%= ENV["MYSQL_PASSWORD"] %>
-    host: <%= ENV["MYSQL_HOST"] %>
-    port: 3306
-    database: defaultdb
-    ssl_mode: :verify_identity
-    sslca: /etc/ssl/certs/ca-certificates.crt
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+  # O si prefieres variables separadas:
+  # host: <%= ENV['MYSQL_HOST'] %>
+  # port: <%= ENV['MYSQL_PORT'] || 3306 %>
+  # username: <%= ENV['MYSQL_USER'] %>
+  # password: <%= ENV['MYSQL_PASSWORD'] %>
+  # database: <%= ENV['MYSQL_DATABASE'] %>
+  # ssl_mode: :verify_identity
