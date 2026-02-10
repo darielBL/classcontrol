@@ -6,7 +6,8 @@ default: &default
   username: root
   password: mysqlpass
   socket: /var/run/mysqld/mysqld.sock
-#  ssl_mode: :disabled
+  ssl_mode: :disabled
+  sslverify: false
 
 development:
   <<: *default
