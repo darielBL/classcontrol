@@ -1,21 +1,21 @@
-# Desactiva workers para Koyeb (funciona mejor)
+# Koyeb necesita workers 0
 workers 0
 
-# Configura threads
+# Threads configurados
 threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
 threads threads_count, threads_count
 
-# Puerto para Koyeb
+# Puerto específico
 port ENV.fetch("PORT", 3001)
 
 # Entorno
 environment ENV.fetch("RAILS_ENV", "production")
 
-# Bind específico para Koyeb
+# Bind explícito
 bind "tcp://0.0.0.0:#{ENV.fetch('PORT', 3001)}"
 
-# Worker timeout para evitar reinicios prematuros
+# Timeout más largo para Koyeb
 worker_timeout 3600
 
-# No usar preload_app! en Koyeb con workers 0
-# plugin :tmp_restart  # Opcional
+# Sin preload_app (causa problemas en Koyeb)
+# plugin :tmp_restart
