@@ -3,66 +3,38 @@ default: &default
   adapter: mysql2
   encoding: utf8mb4
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password: mysqlpass
-  socket: /var/run/mysqld/mysqld.sock
-  ssl_mode: :disabled
-  sslverify: false
+  timeout: 5000
 
 development:
   <<: *default
   database: classcontrol_development
+  username: root
+  password: mysqlpass
+  socket: /var/run/mysqld/mysqld.sock
 
 test:
   <<: *default
   database: classcontrol_test
+  username: root
+  password: mysqlpass
+  socket: /var/run/mysqld/mysqld.sock
 
-# PRODUCCIÓN CON TODAS LAS CONEXIONES
+# PRODUCCIÓN CON MÚLTIPLES CONEXIONES
 production:
   primary:
-    adapter: mysql2
-    encoding: utf8mb4
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: avnadmin
-    password: <%= ENV["MYSQL_PASSWORD"] %>
-    host: <%= ENV["MYSQL_HOST"] %>
-    port: 3306
-    database: defaultdb
-    ssl_mode: :verify_identity
-    sslca: /etc/ssl/certs/ca-certificates.crt
+    <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
 
   cable:
-    adapter: mysql2
-    encoding: utf8mb4
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: avnadmin
-    password: <%= ENV["MYSQL_PASSWORD"] %>
-    host: <%= ENV["MYSQL_HOST"] %>
-    port: 3306
-    database: defaultdb
-    ssl_mode: :verify_identity
-    sslca: /etc/ssl/certs/ca-certificates.crt
+    <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
+    # Action Cable necesita su propia conexión
+    pool: <%= ENV.fetch("ACTION_CABLE_POOL_SIZE") { 5 } %>
 
   queue:
-    adapter: mysql2
-    encoding: utf8mb4
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: avnadmin
-    password: <%= ENV["MYSQL_PASSWORD"] %>
-    host: <%= ENV["MYSQL_HOST"] %>
-    port: 3306
-    database: defaultdb
-    ssl_mode: :verify_identity
-    sslca: /etc/ssl/certs/ca-certificates.crt
+    <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
 
   cache:
-    adapter: mysql2
-    encoding: utf8mb4
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    username: avnadmin
-    password: <%= ENV["MYSQL_PASSWORD"] %>
-    host: <%= ENV["MYSQL_HOST"] %>
-    port: 3306
-    database: defaultdb
-    ssl_mode: :verify_identity
-    sslca: /etc/ssl/certs/ca-certificates.crt
+    <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
