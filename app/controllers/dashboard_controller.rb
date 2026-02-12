@@ -4,6 +4,8 @@ class DashboardController < ApplicationController
   def show
     @group = current_user.groups.find(params[:group_id])
     @stats = calculate_group_stats(@group)
+
+    @stats[:students] = @stats[:students].sort_by { |s| s[:list_no] }
   end
 
   private

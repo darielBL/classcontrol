@@ -1,13 +1,11 @@
 class StudentsController < ApplicationController
+  before_action :set_group
   before_action :set_student, only: [:edit, :update, :destroy]
 
   def index
-    @students = current_user.students.includes(:group)
+    @students = @group.students.order(list_no: :asc)
   end
-  def group_index
-    @group = current_user.groups.find(params[:group_id])
-    @students = @group.students
-  end
+
   def new
     @student = @group.students.new
   end
@@ -15,8 +13,9 @@ class StudentsController < ApplicationController
   def create
     @student = @group.students.new(student_params)
     @student.user = current_user
+
     if @student.save
-      redirect_to group_dashboard_path(@group), notice: 'Estudiante creado exitosamente.'
+      redirect_to group_students_path(@group), notice: 'Estudiante creado exitosamente.'
     else
       render :new, status: :unprocessable_entity
     end
@@ -27,7 +26,7 @@ class StudentsController < ApplicationController
 
   def update
     if @student.update(student_params)
-      redirect_to group_students_path, notice: 'Estudiante actualizado exitosamente.'
+      redirect_to group_students_path(@group), notice: 'Estudiante actualizado exitosamente.'
     else
       render :edit, status: :unprocessable_entity
     end
@@ -35,11 +34,11 @@ class StudentsController < ApplicationController
 
   def destroy
     @student.destroy
-    redirect_to group_students_path, notice: 'Estudiante eliminado exitosamente.'
+    redirect_to group_students_path(@group), notice: 'Estudiante eliminado exitosamente.'
   end
 
   def import
-    return redirect_to group_students_path, alert: "❌ Selecciona un archivo" unless params[:file]
+    return redirect_to group_students_path(@group), alert: "❌ Selecciona un archivo" unless params[:file]
 
     require 'roo'
 
@@ -47,36 +46,36 @@ class StudentsController < ApplicationController
     sheet = file.sheet(0)
 
     created = 0
-    sheet.each_row_streaming(offset: 1) do |row| # Salta header
-      name = row[0]&.value&.strip      # Columna A = Nombre
-      lista_num = row[1]&.value&.to_i  # Columna B = Número de lista
+    sheet.each_row_streaming(offset: 1) do |row|
+      name = row[0]&.value&.strip
+      lista_num = row[1]&.value&.to_i
 
       next if name.blank? || lista_num < 1
 
-      # Crea solo si NO existe ese número de lista
-      unless current_user.students.exists?(list_no: lista_num)
-        student = current_user.students.create!(
+      # Verificar si ya existe en ESTE grupo específico
+      unless @group.students.exists?(list_no: lista_num)
+        @group.students.create!(
           name: name,
-          list_no: lista_num
+          list_no: lista_num,
+          user: current_user
         )
         created += 1
       end
     end
 
-    redirect_to group_students_path, notice: "✅ #{created} estudiantes importados"
+    redirect_to group_students_path(@group), notice: "✅ #{created} estudiantes importados"
   rescue => e
-    redirect_to group_students_path, alert: "❌ Error: #{e.message}"
+    redirect_to group_students_path(@group), alert: "❌ Error: #{e.message}"
   end
-
-
 
   private
 
   def set_group
     @group = current_user.groups.find(params[:group_id])
   end
+
   def set_student
-    @student = current_user.students.find(params[:id])
+    @student = @group.students.find(params[:id])
   end
 
   def student_params

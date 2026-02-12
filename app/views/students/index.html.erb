@@ -12,10 +12,9 @@
         <i class="bi bi-plus-lg me-2"></i>Agregar Estudiante
       </button>
 
-      <!-- Formulario IMPORTAR (mismo nivel) -->
-      <%= form_with url: import_group_students_path, method: :post, local: true, class: 'd-inline' do |f| %>
+      <!-- Formulario IMPORTAR -->
+      <%= form_with url: import_group_students_path(@group), method: :post, local: true, class: 'd-inline' do |f| %>
         <%= f.file_field :file, accept: '.xlsx,.xls', class: 'd-none', id: 'excel_file' %>
-
         <label for="excel_file" class="btn btn-success mb-0">
           <i class="bi bi-file-earmark-excel me-2"></i>Importar Excel
         </label>
@@ -24,17 +23,16 @@
     </div>
   </div>
 
-
   <!-- Students List -->
   <div class="card bg-card border-secondary">
     <div class="card-header bg-transparent border-secondary">
       <h5 class="card-title mb-0">
         <i class="bi bi-people-fill text-primary me-2"></i>
-        Lista de Estudiantes (<%= @students&.count %>)
+        Lista de Estudiantes (<%= @students.count %>)
       </h5>
     </div>
     <div class="card-body">
-      <% if @students&.any? %>
+      <% if @students.any? %>
         <div class="d-flex flex-column gap-2">
           <% @students.each do |student| %>
             <div class="student-item d-flex align-items-center justify-content-between p-3 rounded">
@@ -47,12 +45,17 @@
               </div>
 
               <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-ghost" onclick="openEditModal('<%= student.id %>', '<%= j(student.name) %>')">
+                <button class="btn btn-sm btn-ghost" onclick="openEditModal('<%= student.id %>', '<%= j(student.name) %>', <%= student.list_no %>)">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-ghost text-danger" onclick="openDeleteModal('<%= student.id %>', '<%= j(student.name) %>')">
+
+                <!-- ✅ BUTTON_TO con confirmación Turbo - SIN MODAL, SIN CSRF -->
+                <%= button_to group_student_path(@group, student),
+                              method: :delete,
+                              class: "btn btn-sm btn-ghost text-danger",
+                              form: { data: { turbo_confirm: "¿Eliminar a #{student.name}? Esta acción no se puede deshacer." } } do %>
                   <i class="bi bi-trash"></i>
-                </button>
+                <% end %>
               </div>
             </div>
           <% end %>
@@ -76,18 +79,16 @@
         <h5 class="modal-title" id="studentModalTitle">Nuevo Estudiante</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <%= form_with url: group_students_path, method: :post, id: "studentForm", local: true do |f| %>
+      <%= form_with url: group_students_path(@group), method: :post, id: "studentForm", local: true do |f| %>
         <div class="modal-body">
           <input type="hidden" name="_method" id="formMethod" value="post">
 
-          <!-- CAMPO NÚMERO DE LISTA -->
           <div class="mb-3">
             <label for="studentListNo" class="form-label">Número de lista <span class="text-danger">*</span></label>
             <input type="number" class="form-control" id="studentListNo" name="student[list_no]"
                    placeholder="1" min="1" required>
           </div>
 
-          <!-- CAMPO NOMBRE -->
           <div class="mb-3">
             <label for="studentName" class="form-label">Nombre <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="studentName" name="student[name]"
@@ -103,65 +104,36 @@
   </div>
 </div>
 
-
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-card border-secondary">
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title">¿Eliminar estudiante?</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p class="text-muted mb-0">
-          Esta acción eliminará a "<span id="deleteStudentName"></span>" y todos sus registros de asistencia y notas. Esta acción no se puede deshacer.
-        </p>
-      </div>
-      <div class="modal-footer border-secondary">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form action="" method="post" id="deleteForm">
-          <input type="hidden" name="_method" value="delete">
-          <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
-          <button type="submit" class="btn btn-danger">Eliminar</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
+    const groupId = '<%= @group.id %>';
+    const groupStudentsPath = '<%= group_students_path(@group) %>';
+
     function openCreateModal() {
         document.getElementById('studentModalTitle').textContent = 'Nuevo Estudiante';
-        document.getElementById('studentForm').action = '<%= group_students_path %>';
+        document.getElementById('studentForm').action = groupStudentsPath;
         document.getElementById('formMethod').value = 'post';
         document.getElementById('studentName').value = '';
-        document.getElementById('studentListNo').value = '';  // ← NUEVO
+        document.getElementById('studentListNo').value = '';
         document.getElementById('studentSubmitBtn').textContent = 'Crear';
     }
 
-    function openEditModal(id, name, list_no) {  // ← Agrega list_no
+    function openEditModal(id, name, list_no) {
         document.getElementById('studentModalTitle').textContent = 'Editar Estudiante';
-        document.getElementById('studentForm').action = '/students/' + id;
+        document.getElementById('studentForm').action = groupStudentsPath + '/' + id;
         document.getElementById('formMethod').value = 'patch';
         document.getElementById('studentName').value = name;
-        document.getElementById('studentListNo').value = list_no;  // ← NUEVO
+        document.getElementById('studentListNo').value = list_no;
         document.getElementById('studentSubmitBtn').textContent = 'Guardar';
         new bootstrap.Modal(document.getElementById('studentModal')).show();
     }
 
-    function openDeleteModal(id, name) {
-        document.getElementById('deleteStudentName').textContent = name;
-        document.getElementById('deleteForm').action = '/students/' + id;
-        new bootstrap.Modal(document.getElementById('deleteModal')).show();
-    }
-
-    // Script MÍNIMO solo para mostrar botón procesar
+    // Script para el botón de importar
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('excel_file').addEventListener('change', function() {
-            if (this.files.length > 0) {
+        const excelFile = document.getElementById('excel_file');
+        if (excelFile) {
+            excelFile.addEventListener('change', function() {
                 document.getElementById('submit_import').classList.remove('d-none');
-            }
-        });
+            });
+        }
     });
 </script>
